@@ -73,6 +73,10 @@ def dynamic_process(app_id, UDID, bundle_id,country, out_dir="out"):
         if wdaclickprocess.is_alive():
             wdaclickprocess.terminate()
             wdaclickprocess.join()
+            
+        if wda_process.poll() is None:  # WDA 进程仍在运行
+            wda_process.terminate()
+            wda_process.wait()
 
         # 卸载应用逻辑
         uninstall_cmd = f"ideviceinstaller -u {UDID} -U {bundle_id}"
