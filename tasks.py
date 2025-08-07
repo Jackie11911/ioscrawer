@@ -14,7 +14,7 @@ def process_ipa_task(url):
         if country == 'cn':
             udid = '83c9e585007871c1daf44b09bca1292bb2453b81'
         elif country == 'us':
-            udid = '83c9e585007871c1daf44b09bca1292bb2453b23'
+            udid = '176eefd47c0c777efb132dc3c307b9abbdbf1f8a'
         else:
             return {'error': 'Unsupported country code'}
 
