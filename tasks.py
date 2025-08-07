@@ -12,14 +12,16 @@ def process_ipa_task(url):
     try:
         # 调用下载函数
         app_id, country, bundle_id, app_name = download_ipa_file(url)
+        mitmproxydir = ""
         if country == 'cn':
             udid = '83c9e585007871c1daf44b09bca1292bb2453b81'
+            mitmproxydir = "mitmproxydir/8080/log"
         elif country == 'us':
             udid = '176eefd47c0c777efb132dc3c307b9abbdbf1f8a'
+            mitmproxydir = "mitmproxydir/8081/log"
         else:
             return {'error': 'Unsupported country code'}
-        
-        mitmproxydir = "mitmproxydir"
+
         shutil.rmtree(mitmproxydir)
         os.makedirs(mitmproxydir, exist_ok=True)
 

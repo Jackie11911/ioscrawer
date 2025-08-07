@@ -35,7 +35,7 @@ def dynamic_process(app_id, UDID, bundle_id,country, out_dir="out"):
     wda_thread = threading.Thread(target=run_wda, args=(wdacommand, wda_process, working_directory))
     wda_thread.start()
     
-    time.sleep(10)  # 等待 WDA 启动
+    time.sleep(20)  # 等待 WDA 启动
     
     # 等待 WDA 进程正常启动
     print("Waiting for WDA process to start...")
@@ -66,7 +66,7 @@ def dynamic_process(app_id, UDID, bundle_id,country, out_dir="out"):
         wdaclickprocess = multiprocessing.Process(target=wda_click, args=(capabilities, appiumurl, bundle_id, out_dir, country,))
         wdaclickprocess.start()
 
-        # 等待 150 秒
+        # 等待 150 秒ß
         time.sleep(150)
 
         # 终止 wdaclickprocess
