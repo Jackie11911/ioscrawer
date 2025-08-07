@@ -22,7 +22,7 @@ def dynamic_process(app_id, UDID, bundle_id,country, out_dir="out"):
     subprocess.run(installcmd, shell=True, check=True)
     out_dir = os.path.join(out_dir, app_id)
 
-    working_directory = "/Users/tmliu/Documents//Users/tmliu/Documents/appanalyzer-ios/WebDriverAgent"
+    working_directory = "/Users/tmliu/Documents/appanalyzer-ios/WebDriverAgent"
 
     # 启动 WebDriverAgent 服务
     wdacommand = [
