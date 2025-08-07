@@ -16,6 +16,8 @@ def dynamic_process(app_id, UDID, bundle_id,country, out_dir="out"):
     :param app_id: 应用 ID
     :param UDID: 设备唯一标识符
     """
+    # 需要修改，时刻监控webdriver有没有挂掉（极有可能中途挂掉）
+    # 结束后需要 杀死
     # 安装逻辑
     ipafilePath = f"{app_id}.ipa"
     installcmd = f"ideviceinstaller -u {UDID} -i \"{ipafilePath}\""
@@ -32,6 +34,20 @@ def dynamic_process(app_id, UDID, bundle_id,country, out_dir="out"):
     wda_process = subprocess.Popen(wdacommand, cwd=working_directory)
     wda_thread = threading.Thread(target=run_wda, args=(wdacommand, wda_process, working_directory))
     wda_thread.start()
+    
+    time.sleep(10)  # 等待 WDA 启动
+    
+    # 等待 WDA 进程正常启动
+    print("Waiting for WDA process to start...")
+    max_wait_time = 60  # 最大等待时间60秒
+    wait_start = time.time()
+    while time.time() - wait_start < max_wait_time:
+        if wda_process.poll() is None:  # 进程仍在运行
+            print("WDA process is running normally")
+            break
+        time.sleep(20)
+    else:
+        raise Exception("WDA process failed to start within the expected time")
     
     # 启动appium服务并随机点击
     capabilities = {
@@ -92,7 +108,7 @@ def run_wda(wdacommand, wda_process, working_directory):
                 wda_process = subprocess.Popen(wdacommand, cwd=working_directory)
             else:
                 # WDA 正常运行
-                time.sleep(30)  # 每隔 30 秒检查一次
+                time.sleep(30)
     except Exception as e:
         print(f"An error occurred: {e}")
         if wda_process:
@@ -113,7 +129,7 @@ def wda_click(capabilities,appiumurl,bundleId,out_dir,country):
                 # 保持应用在前台
                 driver.activate_app(bundleId)
                 while find_and_click_agree(driver,clicked_elements,country):
-                    time.sleep(2)
+                    time.sleep(5)
                     # 随机点击
                 width = driver.get_window_size()['width']
                 height = driver.get_window_size()['height']
