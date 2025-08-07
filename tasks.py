@@ -5,6 +5,7 @@ from .afterprocess import get_network_info_from_folder
 from .llmds import filter_domains_need_to_block
 import os
 import json
+import shutil
 
 @shared_task
 def process_ipa_task(url):
@@ -17,12 +18,16 @@ def process_ipa_task(url):
             udid = '83c9e585007871c1daf44b09bca1292bb2453b23'
         else:
             return {'error': 'Unsupported country code'}
+        
+        mitmproxydir = "mitmproxydir"
+        shutil.rmtree(mitmproxydir)
+        os.makedirs(mitmproxydir, exist_ok=True)
 
         # 安装和自动化测试
         dynamic_process(app_id, udid, bundle_id, country)
 
         # 提取抓包信息并生成json
-        network_result = get_network_info_from_folder(f"out/{app_id}")
+        network_result = get_network_info_from_folder("mitmproxydir")
 
         # 使用LLM研判核心域名
         core_domains = []
