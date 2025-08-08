@@ -10,7 +10,7 @@ from selenium.common.exceptions import NoSuchElementException
 import multiprocessing
 
 
-def dynamic_process(app_id, UDID, bundle_id,country, out_dir="out"):
+def dynamic_process(app_id, UDID, bundle_id, country, out_dir="out"):
     """
     动态处理函数，执行安装和自动化测试。
     :param app_id: 应用 ID
@@ -23,31 +23,39 @@ def dynamic_process(app_id, UDID, bundle_id,country, out_dir="out"):
     installcmd = f"ideviceinstaller -u {UDID} -i \"{ipafilePath}\""
     subprocess.run(installcmd, shell=True, check=True)
     out_dir = os.path.join(out_dir, app_id)
+    wdaport = 0
+    appiumurl=""
+    if(country=="cn"):
+        wdaport = 8100
+        appiumurl = "http://localhost:4723"
+    elif(country=="us"):
+        wdaport = 8101
+        appiumurl = "http://localhost:4724"
 
-    working_directory = "/Users/tmliu/Documents//Users/tmliu/Documents/appanalyzer-ios/WebDriverAgent"
+    # working_directory = "/Users/tmliu/Documents//Users/tmliu/Documents/appanalyzer-ios/WebDriverAgent"
 
     # 启动 WebDriverAgent 服务
-    wdacommand = [
-        "xcodebuild", "-project", "WebDriverAgent.xcodeproj", "-scheme", "WebDriverAgentRunner",
-        "-destination", f"id={UDID}", "test"
-    ]
-    wda_process = subprocess.Popen(wdacommand, cwd=working_directory)
-    wda_thread = threading.Thread(target=run_wda, args=(wdacommand, wda_process, working_directory))
-    wda_thread.start()
+    # wdacommand = [
+    #     "xcodebuild", "-project", "WebDriverAgent.xcodeproj", "-scheme", "WebDriverAgentRunner",
+    #     "-destination", f"id={UDID}", "test"
+    # ]
+    # wda_process = subprocess.Popen(wdacommand, cwd=working_directory)
+    # wda_thread = threading.Thread(target=run_wda, args=(wdacommand, wda_process, working_directory))
+    # wda_thread.start()
     
-    time.sleep(10)  # 等待 WDA 启动
+    # time.sleep(10)  # 等待 WDA 启动
     
-    # 等待 WDA 进程正常启动
-    print("Waiting for WDA process to start...")
-    max_wait_time = 60  # 最大等待时间60秒
-    wait_start = time.time()
-    while time.time() - wait_start < max_wait_time:
-        if wda_process.poll() is None:  # 进程仍在运行
-            print("WDA process is running normally")
-            break
-        time.sleep(20)
-    else:
-        raise Exception("WDA process failed to start within the expected time")
+    # # 等待 WDA 进程正常启动
+    # print("Waiting for WDA process to start...")
+    # max_wait_time = 60  # 最大等待时间60秒
+    # wait_start = time.time()
+    # while time.time() - wait_start < max_wait_time:
+    #     if wda_process.poll() is None:  # 进程仍在运行
+    #         print("WDA process is running normally")
+    #         break
+    #     time.sleep(20)
+    # else:
+    #     raise Exception("WDA process failed to start within the expected time")
     
     # 启动appium服务并随机点击
     capabilities = {
@@ -57,10 +65,9 @@ def dynamic_process(app_id, UDID, bundle_id,country, out_dir="out"):
         "appium:udid": UDID,
         "appium:bundleId": bundle_id,
         "appium:automationName": "XCUITest",
-        "wdaLocalPort": 8100,
-        "wdaRemotePort": 8100
+        "wdaLocalPort": wdaport,
+        "wdaRemotePort": wdaport
     }
-    appiumurl = "http://localhost:4723"
     
     try:
         wdaclickprocess = multiprocessing.Process(target=wda_click, args=(capabilities, appiumurl, bundle_id, out_dir, country,))
@@ -74,9 +81,9 @@ def dynamic_process(app_id, UDID, bundle_id,country, out_dir="out"):
             wdaclickprocess.terminate()
             wdaclickprocess.join()
             
-        if wda_process.poll() is None:  # WDA 进程仍在运行
-            wda_process.terminate()
-            wda_process.wait()
+        # if wda_process.poll() is None:  # WDA 进程仍在运行
+        #     wda_process.terminate()
+        #     wda_process.wait()
 
         # 卸载应用逻辑
         uninstall_cmd = f"ideviceinstaller -u {UDID} -U {bundle_id}"
@@ -97,26 +104,26 @@ def dynamic_process(app_id, UDID, bundle_id,country, out_dir="out"):
     except subprocess.TimeoutExpired as e:
         print(f"命令超时: {e.cmd}")
 
-def run_wda(wdacommand, wda_process, working_directory):
-    """
-    运行 WebDriverAgent 服务，并监控其状态。
-    :param wdacommand: WebDriverAgent 的命令
-    :param wda_process: 当前运行的 WDA 进程
-    :param working_directory: WebDriverAgent 的工作目录
-    """
-    try:
-        while True:
-            retcode = wda_process.poll()
-            if retcode is not None:
-                print(f"WDA process exited with code {retcode}, restarting...")
-                wda_process = subprocess.Popen(wdacommand, cwd=working_directory)
-            else:
-                # WDA 正常运行
-                time.sleep(30)
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        if wda_process:
-            wda_process.terminate()
+# def run_wda(wdacommand, wda_process, working_directory):
+#     """
+#     运行 WebDriverAgent 服务，并监控其状态。
+#     :param wdacommand: WebDriverAgent 的命令
+#     :param wda_process: 当前运行的 WDA 进程
+#     :param working_directory: WebDriverAgent 的工作目录
+#     """
+#     try:
+#         while True:
+#             retcode = wda_process.poll()
+#             if retcode is not None:
+#                 print(f"WDA process exited with code {retcode}, restarting...")
+#                 wda_process = subprocess.Popen(wdacommand, cwd=working_directory)
+#             else:
+#                 # WDA 正常运行
+#                 time.sleep(30)
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
+#         if wda_process:
+#             wda_process.terminate()
             
 def wda_click(capabilities,appiumurl,bundleId,out_dir,country):
     try:
