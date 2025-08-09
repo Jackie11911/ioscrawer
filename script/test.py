@@ -1,7 +1,7 @@
 import requests
 
 # 你的 Django 服务地址
-BASE_URL = 'http://127.0.0.1:8000'
+BASE_URL = 'http://127.0.0.1:8001'
 
 # 要测试的 IPA 下载链接
 ipa_url = 'https://apps.apple.com/us/app/%E6%88%91%E7%9A%84%E6%95%99%E6%9C%83/id1091176017'

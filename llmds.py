@@ -18,7 +18,7 @@ OLLAMA_SERVICE = 'http://10.12.190.56:11434'
 # OLLAMA_MODEL = 'llama3:latest'
 OLLAMA_MODEL = 'llama3.1:8b-instruct-fp16'
 
-PROMPT_TEMPLATE = '''
+PROM_TEMPLATE = '''
 You are a specialized information extraction assistant, designed to identify and extract categories of information related to mobile applications from user queries. 
 Users may inquire about the following categories: 
 
@@ -93,7 +93,7 @@ client_ollama = Client(
 )
 
 # sk-61de429c43324f1e90a41e8610637a5e
-client_deepseek = OpenAI(api_key="", base_url="https://api.deepseek.com")
+client_deepseek = OpenAI(api_key="sk-9d3fe826fd3c4352aa61ebe6335f2e74", base_url="https://api.deepseek.com")
     
     
 
