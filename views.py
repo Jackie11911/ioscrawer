@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 import download_utils
 import wda_utils
 import afterprocess
@@ -76,6 +77,7 @@ def process_ipa_task(app_id, country, bundle_id, app_name, task_id):
         # 释放锁
         process_lock.release()
 
+@csrf_exempt
 def process_ipa_dynamic(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST method is allowed'}, status=405)

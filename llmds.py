@@ -335,9 +335,7 @@ Package Name: {package_name}
 Domain List: {domain_list}
 '''
 
-def filter_domains_need_to_block(json_result,all_domains):
-    app_name = json_result['static_info']['apk_name']
-    package_name = json_result['static_info']['package_name']
+def filter_domains_need_to_block(app_name, package_name ,all_domains):
     # 过滤掉不需要屏蔽的域名
     domains_to_block = []
     response = client_deepseek.chat.completions.create(
