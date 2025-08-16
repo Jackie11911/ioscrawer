@@ -18,7 +18,7 @@ OLLAMA_SERVICE = 'http://10.12.190.56:11434'
 # OLLAMA_MODEL = 'llama3:latest'
 OLLAMA_MODEL = 'llama3.1:8b-instruct-fp16'
 
-PROM_TEMPLATE = '''
+PROMPT_TEMPLATE = '''
 You are a specialized information extraction assistant, designed to identify and extract categories of information related to mobile applications from user queries. 
 Users may inquire about the following categories: 
 
@@ -92,7 +92,7 @@ client_ollama = Client(
   host=OLLAMA_SERVICE
 )
 
-# sk-61de429c43324f1e90a41e8610637a5e
+
 client_deepseek = OpenAI(api_key="", base_url="https://api.deepseek.com")
     
     
@@ -335,7 +335,9 @@ Package Name: {package_name}
 Domain List: {domain_list}
 '''
 
-def filter_domains_need_to_block(app_name,package_name, all_domains):
+def filter_domains_need_to_block(json_result,all_domains):
+    app_name = json_result['static_info']['apk_name']
+    package_name = json_result['static_info']['package_name']
     # 过滤掉不需要屏蔽的域名
     domains_to_block = []
     response = client_deepseek.chat.completions.create(
