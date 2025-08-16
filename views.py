@@ -20,7 +20,7 @@ def process_ipa_task(app_id, country, bundle_id, app_name, task_id):
     """异步任务处理函数"""
     try:
         # 更新任务状态为开始
-        task_status_store[task_id] = {'status': 'STARTED', 'result': None, 'error': None}
+        task_status_store[task_id] = {'status': 'STARTED', 'result': None, 'error': None, 'appid': app_id}
         mitmproxydir = ""
         if country == 'cn':
             udid = '83c9e585007871c1daf44b09bca1292bb2453b81'
@@ -29,7 +29,7 @@ def process_ipa_task(app_id, country, bundle_id, app_name, task_id):
             udid = '176eefd47c0c777efb132dc3c307b9abbdbf1f8a'
             mitmproxydir = "mitmproxydir/8081/log/requests"
         else:
-            task_status_store[task_id] = {'status': 'FAILURE', 'result': None, 'error': 'Unsupported country code'}
+            task_status_store[task_id] = {'status': 'FAILURE', 'result': None, 'error': 'Unsupported country code', 'appid': app_id}
             return
 
         if os.path.exists(mitmproxydir):
@@ -68,11 +68,11 @@ def process_ipa_task(app_id, country, bundle_id, app_name, task_id):
             json.dump(final_result, json_file, ensure_ascii=False, indent=4)
 
         # 更新任务状态为成功
-        task_status_store[task_id] = {'status': 'SUCCESS', 'result': final_result, 'error': None}
+        task_status_store[task_id] = {'status': 'SUCCESS', 'result': final_result, 'error': None, 'appid': app_id}
 
     except Exception as e:
         # 更新任务状态为失败
-        task_status_store[task_id] = {'status': 'FAILURE', 'result': None, 'error': str(e)}
+        task_status_store[task_id] = {'status': 'FAILURE', 'result': None, 'error': str(e), 'appid': app_id}
     finally:
         # 释放锁
         process_lock.release()
@@ -121,7 +121,7 @@ def process_ipa_dynamic(request):
         task_id = str(uuid.uuid4())
         
         # 初始化任务状态
-        task_status_store[task_id] = {'status': 'PENDING', 'result': None, 'error': None}
+        task_status_store[task_id] = {'status': 'PENDING', 'result': None, 'error': None, 'appid': app_id}
         
         # 启动后台线程处理任务
         thread = threading.Thread(target=process_ipa_task, args=(app_id, country, bundle_id, app_name, task_id))
@@ -152,3 +152,27 @@ def task_status(request, task_id):
         return JsonResponse({'status': 'Task failed', 'error': task_info['error']}, status=500)
     else:
         return JsonResponse({'status': 'Task is in an unknown state'})
+
+# 新增 get_results 函数
+@csrf_exempt
+def get_results(request, task_id):
+    if task_id not in task_status_store:
+        return JsonResponse({'error': 'Task not found'}, status=404)
+
+    task_info = task_status_store[task_id]
+    app_id = task_info.get('appid')
+
+    if not app_id:
+        return JsonResponse({'error': 'App ID not found for the task'}, status=500)
+
+    results_file = os.path.join('results', f"{app_id}.json")
+
+    if not os.path.exists(results_file):
+        return JsonResponse({'error': 'Results file not found'}, status=404)
+
+    try:
+        with open(results_file, 'r', encoding='utf-8') as file:
+            results_data = json.load(file)
+        return JsonResponse({'status': 'success', 'data': results_data})
+    except Exception as e:
+        return JsonResponse({'error': f'Failed to read results file: {str(e)}'}, status=500)
