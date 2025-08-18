@@ -174,6 +174,6 @@ def get_results(request, task_id):
     try:
         with open(results_file, 'r', encoding='utf-8') as file:
             results_data = json.load(file)
-        return JsonResponse({'status': 'success', 'data': results_data})
+        return JsonResponse(results_data)
     except Exception as e:
         return JsonResponse({'error': f'Failed to read results file: {str(e)}'}, status=500)
