@@ -135,6 +135,7 @@ def process_ipa_dynamic(request):
         process_lock.release()
         return JsonResponse({'error': f'Failed to save IPA file: {str(e)}'}, status=500)
 
+@csrf_exempt
 def task_status(request, task_id):
     if task_id not in task_status_store:
         return JsonResponse({'status': 'Task is pending or does not exist'}, status=404)
@@ -153,7 +154,7 @@ def task_status(request, task_id):
     else:
         return JsonResponse({'status': 'Task is in an unknown state'})
 
-# 新增 get_results 函数
+
 @csrf_exempt
 def get_results(request, task_id):
     if task_id not in task_status_store:
